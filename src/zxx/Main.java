@@ -1,3 +1,5 @@
+package zxx;
+
 import jade.core.Profile;
 import jade.core.ProfileImpl;
 import jade.core.Runtime;
@@ -21,7 +23,7 @@ public class Main {
             // 创建 BuyerAgent
             AgentController buyerAgent = container.createNewAgent("BuyerAgent", BuyerAgent.class.getName(), null);
             // 创建 MerchantAgent
-            AgentController merchantAgent = container.createNewAgent("MerchantAgent", Merchant.class.getName(), null);
+            AgentController merchantAgent = container.createNewAgent("MerchantAgent", MerchantAgent.class.getName(), null);
             buyerAgent.start();
             merchantAgent.start();
         } catch (Exception e) {
