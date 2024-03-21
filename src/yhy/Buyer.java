@@ -1,3 +1,5 @@
+package yhy;
+
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -6,7 +8,7 @@ import jade.lang.acl.MessageTemplate;
 import java.text.DecimalFormat;
 import java.util.Random;
 
-public class BuyerAgent extends Agent {
+public class Buyer extends Agent {
     private int requestCount = 0; // 记录发送购买请求的次数
     private String[] ids; // 用于表示不同商家
 

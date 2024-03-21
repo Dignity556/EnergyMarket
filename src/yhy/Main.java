@@ -1,3 +1,5 @@
+package yhy;
+
 import jade.core.Profile;
 import jade.core.ProfileImpl;
 import jade.core.Runtime;
@@ -19,7 +21,7 @@ public class Main {
             AgentContainer container = runtime.createMainContainer(profile);
 
             // 创建 BuyerAgent
-            AgentController buyerAgent = container.createNewAgent("BuyerAgent", BuyerAgent.class.getName(), null);
+            AgentController buyerAgent = container.createNewAgent("BuyerAgent", Buyer.class.getName(), null);
             // 创建 MerchantAgent
             AgentController merchantAgent = container.createNewAgent("MerchantAgent", Merchant.class.getName(), null);
             buyerAgent.start();
