@@ -42,6 +42,8 @@ public class BlockChain extends Agent {
                             addBehaviour(new OrderRequest());
                         }
                 }
+            } else {
+
             }
 
         }
