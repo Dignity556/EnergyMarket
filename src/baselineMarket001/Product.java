@@ -1,3 +1,5 @@
+package baselineMarket001;
+
 public class Product {
     private String name;
     private double price;
