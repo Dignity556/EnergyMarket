@@ -1,65 +1,88 @@
 package yhy;
 
+import jade.core.AID;
 import jade.core.Agent;
+import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.TickerBehaviour;
+import jade.domain.DFService;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
-import java.text.DecimalFormat;
+import javax.swing.*;
 import java.util.Random;
 
+
 public class Buyer extends Agent {
-    private int requestCount = 0; // 记录发送购买请求的次数
-    private String[] ids; // 用于表示不同商家
+    private int orderNum; // 记录当天的订单数量，当天订单数量完成，向BlockChainAgent发送第二天信息
 
     protected void setup() {
-        System.out.println("BuyerAgent" + getAID().getName() + " is ready."); // 打印出买家Agent的名字
-        addBehaviour(new sendPurchaseRequest()); // 发送购买请求
-        addBehaviour(new PurchaseResponseHandler());
+        // Printout a welcome message
+        System.out.println("BuyerAgent" + getAID().getName() + " is ready.");
+
+        addBehaviour(new TickerBehaviour(this, 10000) {
+            protected void onTick() {
+                // 发送
+                myAgent.addBehaviour(new RequestPerformer());
+            }
+        } );
+
+
     }
 
-    private class sendPurchaseRequest extends CyclicBehaviour {
+    private class RequestPerformer extends Behaviour {
+        private AID blockChainAgent;
+        private ACLMessage cfpMessage;
+        private ACLMessage askMessage;
+        private AID sellerAgent;
+        private int energyAmount = 0;
+        private int step = 0;
         public void action() {
-            if (requestCount < 100) {
-                ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-                msg.addReceiver(getAID("MerchantAgent"));
-                // 生成一个随机价格，模拟买家出价
-                double price = generateRandomNumber(5.00, 15.00); // 在规定范围内生成一个随机价格
-                String priceString = formatDecimal(price); // 将随机数转换为字符串并保留两位小数
-                msg.setContent(priceString);
-                send(msg);
-                System.out.println("BuyerAgent" + getAID().getName() + " sent a request to MerchantAgent. (Count: " + (requestCount + 1) + ")");
-                requestCount++;
-            } else {
-                // 发送完100次购买请求后停止
-                System.out.println("BuyerAgent" + getAID().getName() + " has sent 100 purchase requests. Stopping...");
-                doDelete(); // 停止Agent
+            switch (step) {
+                // 发送购买请求订单
+                case 0:
+                    // 生成交易笔数
+                    randAmount(40, 10);
+                    blockChainAgent = new AID("BlockChainAgent", AID.ISLOCALNAME);
+                    askMessage = new ACLMessage(ACLMessage.REQUEST);
+                    askMessage.addReceiver(blockChainAgent);
+                    askMessage.setContent("OrderRequest");
+                    myAgent.send(askMessage);
+                    step = 1;
+                    break;
+                case 1:
+                    // 收集从BlockChainAgent发出的Seller名单
+                    System.out.println("收到Seller名单");
+
+                    // 这里若是需要SellerAgent确认，需要在前面收集所有在DF上注册为seller服务的Agent列表，并向指定Seller购买请求
+                    System.out.println("选定商家并修改数据库，完成交易");
+                    energyAmount -= 1;
+                    step = 0;
+                    break;
+                case 2:
+                    // 日期更新，进行Dayahead定价算法
+                    blockChainAgent = new AID("BlockChainAgent", AID.ISLOCALNAME);
+                    step = 0;
             }
         }
-    }
 
-    private class PurchaseResponseHandler extends CyclicBehaviour {
-        public void action() {
-            MessageTemplate template = MessageTemplate.MatchPerformative(ACLMessage.AGREE); // 匹配消息模板
-            ACLMessage msg = myAgent.receive(template); // 接收消息
-            if (msg != null) {
-                System.out.println("Purchase successful: " + msg.getContent());
-            } else {
-                System.out.println("Purchase failed.");
-                block();
+        // action方法执行结束后，自动执行done方法，返回false继续调用action
+        public boolean done() {
+            // 已完成当天订单的交易量
+            if (energyAmount == 0) {
+                step = 2;
             }
+            return false;
         }
-    }
 
-    /*下面是一些辅助方法，用于生成随机数和格式化小数。*/
-    // 生成指定范围内的随机数（带两位小数）
-    private static double generateRandomNumber(double min, double max) {
-        Random rand = new Random();
-        return min + (max - min) * rand.nextDouble();
-    }
-    // 格式化保留两位小数
-    private static String formatDecimal(double number) {
-        DecimalFormat df = new DecimalFormat("#.##");
-        return df.format(number);
+        // 随机生成当天交易笔数
+        public void randAmount(int rangeLeft, int rangeRight) {
+            Random rand = new Random();
+            energyAmount = rand.nextInt(rangeLeft) + rangeRight - rangeLeft;
+        }
     }
 }
+

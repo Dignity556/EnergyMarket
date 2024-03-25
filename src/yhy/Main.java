@@ -20,12 +20,17 @@ public class Main {
             // 创建Agent容器
             AgentContainer container = runtime.createMainContainer(profile);
 
+            // 创建 BlockChainAgent
+            AgentController blockChainAgent = container.createNewAgent("BlockChainAgent", BlockChain.class.getName(), null);
             // 创建 BuyerAgent
             AgentController buyerAgent = container.createNewAgent("BuyerAgent", Buyer.class.getName(), null);
             // 创建 MerchantAgent
             AgentController merchantAgent = container.createNewAgent("MerchantAgent", Merchant.class.getName(), null);
-            buyerAgent.start();
+
+            blockChainAgent.start();
             merchantAgent.start();
+            buyerAgent.start();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
