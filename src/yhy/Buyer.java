@@ -57,14 +57,11 @@ public class Buyer extends Agent {
                     break;
                 case 1:
                     acceptMessage = myAgent.receive();
-                    if (acceptMessage != null && acceptMessage.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {
-                        System.out.println("5：Buyer：订单完成，进行下一笔交易");
-                        try {
-                            Thread.sleep(5000);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
+                    if (acceptMessage != null) {
+                        if (acceptMessage.getPerformative() == ACLMessage.ACCEPT_PROPOSAL){
+                            System.out.println("4：Buyer：订单完成，进行下一笔交易");
+                            orderNum -= 1;
                         }
-                        orderNum -= 1;
                         step = 0;
                     }
                     break;
@@ -80,11 +77,6 @@ public class Buyer extends Agent {
                     agreeMessage = myAgent.receive();
                     if (agreeMessage != null && agreeMessage.getPerformative() == ACLMessage.AGREE) {
                         System.out.println("8：Buyer：更新完成，可以进行第二天的交易。----------------------------------------------");
-                        try {
-                            Thread.sleep(50000);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
                         step = 0;
                     }
                     break;
@@ -95,8 +87,7 @@ public class Buyer extends Agent {
         public boolean done() {
             // 已完成当天订单的交易量
             if (orderNum == 0) {
-                System.out.println("7：Buyer：当天交易结束。");
-
+                System.out.println("5：Buyer：当天交易结束。");
                 // 生成第二天订单的交易笔数
                 orderNum = rand.nextInt(40) + 10;
                 step = 2;
